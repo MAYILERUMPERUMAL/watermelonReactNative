@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React,{useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
@@ -13,10 +13,10 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
-
 import {
   Colors,
   DebugInstructions,
@@ -24,6 +24,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import { databaseWatermelon } from './database';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -61,6 +62,47 @@ function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  useEffect(()=>{
+    // fetching()
+  },[])
+
+  const fetching = async () => {
+    console.log('jjjjjj')
+    try {
+      const newUser = await databaseWatermelon.write(async () => {
+        let newPost:any
+        const additionalData = { newKey: 'some value' };
+        for(let i=0; i<1000; i++){
+          newPost = await databaseWatermelon.get('posts').create(post => {
+            post.title = `${i+1} new Users`
+            post.body = `${i+1} new body`
+            post.subtitle=`${i+1}subtitle`
+            post.is_pinned=i%2===0?true:false
+            post.metadata = JSON.stringify(additionalData);
+          })
+        }
+       
+        console.log('newPost==',newPost)
+        return newPost;
+      });
+      // console.log('New User:', newUser);
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
+  };
+const onRead=async ()=>{
+const allPosts=await databaseWatermelon.get('posts').query().fetch()
+// console.log('7777777',allPosts)
+const postData=allPosts.map((el:any)=>({
+title:el.title,
+subtitle:el.subtitle,
+body:el.body,
+is_pinned:el.is_pinned
+}))
+console.log('vvvvvv',postData)
+}
+
+
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -80,6 +122,13 @@ function App(): React.JSX.Element {
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
           </Section>
+          <TouchableOpacity onPress={()=>{onRead()}}><Text>{'get'}</Text></TouchableOpacity>
+          <TouchableOpacity onPress={()=>{fetching()}}><Text>{'create'}</Text></TouchableOpacity>
+          <TouchableOpacity onPress={()=>{updateDb()}}><Text>{'update'}</Text></TouchableOpacity>
+          <TouchableOpacity onPress={()=>{updateDb()}}><Text>{'update'}</Text></TouchableOpacity>
+         {/* <TouchableOpacity onPress={()=>>{addExtraKey()}}><Text>{'addExtraKey'}</Text></TouchableOpacity> */}
+
+
           <Section title="See Your Changes">
             <ReloadInstructions />
           </Section>
